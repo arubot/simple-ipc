@@ -1,5 +1,6 @@
 package pw.aru.utils.ipc.server
 
+import org.slf4j.LoggerFactory
 import pw.aru.utils.io.DataPipe
 import pw.aru.utils.io.DataPipeStream
 import pw.aru.utils.ipc.proto.*
@@ -11,8 +12,18 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors.newCachedThreadPool
 import kotlin.concurrent.thread
 
+/**
+ * Creates an [IPCServer] that awaits connections on the specified [port].
+ *
+ * @param serverName The server's name, sent to the client on the handshake.
+ * @param port The server's port.
+ * @param calls Map used to resolve the calls to their handlers.
+ * @param executor (Optional) The [ExecutorService] used to handle the clients asynchronously.
+ * @param extensions (Optional) Map used to resolve unknown opcode calls to their handlers.
+ * @param backlog (Optional) Maximum length of the queue of incoming connections on the socket.
+ */
 class IPCServer(
-    private val serverName: String,
+    val serverName: String,
     port: Int,
     private val calls: Map<String, Socket.(DataPipe) -> Unit>,
     private val executor: ExecutorService = newCachedThreadPool { thread(start = false, name = "$serverName/SocketThread-%d", block = it::run) },
@@ -31,63 +42,80 @@ class IPCServer(
     }
 
     private fun processSocket(socket: Socket): () -> Unit = {
-        socket.use { _ ->
-            val io = DataPipeStream(socket.inputStream, socket.outputStream)
+        try {
+            socket.use { _ ->
+                val io = DataPipeStream(socket.inputStream, socket.outputStream)
 
-            (io).writeInt(handshake)
-                .writeString(serverName)
-                .writeShort(ackMe)
+                (io).writeInt(handshake)
+                    .writeString(serverName)
+                    .writeShort(ackMe)
 
-            if (!io.readBoolean()) {
-                io.write(exitNotAckMe)
-                return@use
-            }
+                if (!io.readBoolean()) {
+                    io.write(exitNotAckMe)
+                    return@use
+                }
 
-            io.write(ackedMe)
+                io.write(ackedMe)
 
-            while (true) {
-                val op = io.readByte()
-                when (op.toInt()) {
-                    opExit -> return@use
+                while (true) {
+                    val op = io.readByte()
+                    when (op.toInt()) {
+                        opExit -> return@use
 
-                    opCall -> {
-                        val call = calls[io.write(opReqAckParams).readString()]
-
-                        if (call == null) {
-                            io.write(opReqInvalidParams)
-                        } else {
-                            socket.call(io.write(opReqAck))
+                        opCheck -> {
+                            (io).writeInt(handshake)
+                                .writeString(serverName)
+                                .writeShort(ackMe)
                         }
-                    }
 
-                    opList -> {
-                        io.write(opReqAck).writeInt(calls.size)
-                        calls.keys.forEach { io.writeString(it) }
-                    }
+                        opList -> {
+                            io.write(opReqAck).writeInt(calls.size)
+                            calls.keys.forEach { io.writeString(it) }
+                        }
 
-                    opListExt -> {
-                        io.write(opReqAck).writeInt(extensions.size)
-                        extensions.keys.forEach { io.writeByte(it.toInt()) }
-                    }
+                        opListExt -> {
+                            io.write(opReqAck).writeInt(extensions.size)
+                            extensions.keys.forEach { io.writeByte(it.toInt()) }
+                        }
 
-                    else -> {
-                        val extension = extensions[op]
+                        opCall -> {
+                            val call = calls[io.write(opReqAckParams).readString()]
 
-                        if (extension == null) {
-                            io.write(opReqInvalid)
-                        } else {
-                            io.write(opReqAckExt)
-                            socket.extension(io)
+                            if (call == null) {
+                                io.write(opReqInvalidParams)
+                            } else {
+                                socket.call(io.write(opReqAck))
+                            }
+                        }
+
+                        else -> {
+                            val extension = extensions[op]
+
+                            if (extension == null) {
+                                io.write(opReqInvalid)
+                            } else {
+                                io.write(opReqAckExt)
+                                socket.extension(io)
+                            }
                         }
                     }
                 }
             }
+        } catch (e: Exception) {
+            logger.error("SocketHandler of socket $socket of server $serverName caught an exception:", e)
         }
     }
 
+    /**
+     * Closes the executor, the listening thread and the server socket, freeing the resources.
+     */
     override fun close() {
         executor.shutdown()
         thread.interrupt()
         server.close()
+    }
+
+    companion object {
+        val logger = LoggerFactory.getLogger(IPCServer::class.java)
     }
 }

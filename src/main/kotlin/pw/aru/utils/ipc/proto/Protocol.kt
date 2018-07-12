@@ -10,9 +10,10 @@ const val ackedMe = 1
 
 //Default IPC operations
 const val opExit = 0
-const val opCall = 1
+const val opCheck = 1
 const val opList = 2
 const val opListExt = 3
+const val opCall = 4
 
 //IPC operations answers
 const val opReqAck = 1

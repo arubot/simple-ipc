@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'pw.aru.utils'
-version = '1.0'
+version = '1.1'
 
 // Minified Splash
 ({ String l, String v ->
@@ -24,6 +24,12 @@ repositories {
 dependencies {
     compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     compile 'pw.aru.utils:pipes:1.0'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    testCompile 'io.kotlintest:kotlintest-runner-junit5:3.1.7'
+    testCompile 'ch.qos.logback:logback-classic:1.2.3'
+}
+test {
+    useJUnitPlatform()
 }
 
 compileKotlin {

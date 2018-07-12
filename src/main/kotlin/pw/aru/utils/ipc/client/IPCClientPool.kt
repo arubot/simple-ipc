@@ -41,6 +41,8 @@ class IPCClientPool(val address: InetAddress = InetAddress.getLocalHost(), val p
     fun <R> borrow(block: (IPCClient) -> R): R {
         val client = queue.poll().let {
             if (it == null || !it.isValid) {
+                it?.close()
+
                 created++
                 maxCreated = max(maxCreated, created)
                 IPCClient(address, port)
@@ -68,7 +70,7 @@ class IPCClientPool(val address: InetAddress = InetAddress.getLocalHost(), val p
     private fun launchCleanup(lastMaxCreated: Int) {
         thread(name = "IPCClientPool-CleanupThread") {
             for (i in 0..(available - lastMaxCreated)) {
-                queue.poll()
+                queue.poll()?.close()
             }
         }
     }

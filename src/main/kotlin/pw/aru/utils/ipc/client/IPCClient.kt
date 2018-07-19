@@ -89,7 +89,7 @@ class IPCClient(val address: InetAddress = getLocalHost(), val port: Int) : Clos
     val commandList: List<String>
         get () {
             check(io.write(opList).readUnsignedByte() == opReqAck, "OP call answer code")
-            return (0 until io.readInt()).map { io.readString() }
+            return io.readSizedStringArray().toList()
         }
 
     /**
@@ -98,7 +98,7 @@ class IPCClient(val address: InetAddress = getLocalHost(), val port: Int) : Clos
     val extensionCodes: List<Byte>
         get () {
             check(io.write(opListExt).readUnsignedByte() == opReqAck, "OP call answer code")
-            return (0 until io.readInt()).map { io.readByte() }
+            return io.readSizedByteArray().toList()
         }
 
     /**

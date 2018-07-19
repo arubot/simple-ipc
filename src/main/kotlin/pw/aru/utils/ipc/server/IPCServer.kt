@@ -69,13 +69,11 @@ class IPCServer(
                         }
 
                         opList -> {
-                            io.write(opReqAck).writeInt(calls.size)
-                            calls.keys.forEach { io.writeString(it) }
+                            io.write(opReqAck).writeSizedStringArray(calls.keys.toTypedArray())
                         }
 
                         opListExt -> {
-                            io.write(opReqAck).writeInt(extensions.size)
-                            extensions.keys.forEach { io.writeByte(it.toInt()) }
+                            io.write(opReqAck).writeSizedByteArray(extensions.keys.toByteArray())
                         }
 
                         opCall -> {

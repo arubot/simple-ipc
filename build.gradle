@@ -93,7 +93,7 @@ bintray {
         repo = 'maven'
         name = project.name
         licenses = ['MIT']
-        vcsUrl = 'https://github.com/arubot/io-pipes.git'
+        vcsUrl = 'https://github.com/arubot/simple-ipc.git'
         publish = true
         version {
             name = project.version

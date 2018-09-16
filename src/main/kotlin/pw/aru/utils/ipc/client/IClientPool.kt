@@ -40,12 +40,20 @@ interface IClientPool<T> : IBaseClient {
         return borrow { it.call(key).use(block) }
     }
 
+    fun <R> tryCall(key: String, block: (DataPipe) -> R): R? {
+        return tryBorrow { it.call(key).use(block) }
+    }
+
     override fun extension(code: Byte): DataPipe {
         return borrowClient().extension(code)
     }
 
     override fun <R> extension(code: Byte, block: (DataPipe) -> R): R {
         return borrow { it.extension(code).use(block) }
+    }
+
+    fun <R> tryExtension(code: Byte, block: (DataPipe) -> R): R? {
+        return tryBorrow { it.extension(code).use(block) }
     }
 
     override val commandList: List<String>

@@ -1,4 +1,4 @@
-package pw.aru.utils.ipc.server
+package pw.aru.utils.ipc.server.util
 
 import pw.aru.utils.io.DataPipe
 import java.lang.reflect.Array.*
@@ -22,10 +22,10 @@ import java.net.Socket
  */
 class ReflectionHandler(private val obj: Any, allowObjectAccess: Boolean = false) : AbstractMap<String, Socket.(DataPipe) -> Unit>() {
 
-    private val methods = obj.javaClass.methods.filter {
-        (it.declaringClass != Object::class.java || (allowObjectAccess && (it.name == "toString" || it.name == "hashCode")))
-            && isTypeValid(it.returnType)
-            && it.parameterTypes.all { this.isTypeValid(it) }
+    private val methods = obj.javaClass.methods.filter { m ->
+        (m.declaringClass != Object::class.java || (allowObjectAccess && (m.name == "toString" || m.name == "hashCode")))
+            && isTypeValid(m.returnType)
+            && m.parameterTypes.all { this.isTypeValid(it) }
     }.groupBy { it.name }.values.mapNotNull { it.singleOrNull() }
 
     override val entries: Set<Map.Entry<String, Socket.(DataPipe) -> Unit>> by lazy {

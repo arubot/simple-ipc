@@ -8,7 +8,7 @@ import pw.aru.utils.ipc.proto.*
 import pw.aru.utils.ipc.proto.ConnectionSide.CLIENT
 import pw.aru.utils.ipc.proto.ConnectionState.*
 
-class ClientImpl<T>(protocol: Protocol, connector: ClientConnector<T>) : IClient<T>, Protocol by protocol {
+internal class ClientImpl<T>(protocol: Protocol, connector: ClientConnector<T>) : IClient<T>, Protocol by protocol {
 
     override val connector: T
     override val pipe: DataPipe

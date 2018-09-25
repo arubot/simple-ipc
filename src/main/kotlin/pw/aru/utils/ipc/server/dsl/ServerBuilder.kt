@@ -2,10 +2,10 @@ package pw.aru.utils.ipc.server.dsl
 
 import pw.aru.utils.io.DataPipe
 import pw.aru.utils.ipc.proto.Protocol
+import pw.aru.utils.ipc.server.util.threadFactory
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.Executors.newCachedThreadPool
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 
 open class ServerBuilder<T>(private val protocol: Protocol) {
     companion object {
@@ -21,9 +21,7 @@ open class ServerBuilder<T>(private val protocol: Protocol) {
      * Executor creator
      */
     var executor: () -> ExecutorService = {
-        Executors.newCachedThreadPool {
-            thread(start = false, name = "$serverName/ExecutingThread-%d", block = it::run)
-        }
+        newCachedThreadPool(threadFactory(nameFormat = "$serverName/ExecutingThread-%d"))
     }
 
     /**

@@ -9,7 +9,7 @@ import java.net.SocketException
 import java.util.concurrent.ExecutorService
 import kotlin.concurrent.thread
 
-class ServerImpl<T>(
+internal class ServerImpl<T>(
     private val proto: Protocol,
     private val serverName: String,
     private val connector: ServerConnector<T>,

@@ -8,7 +8,23 @@ interface IClientPool<T> : IBaseClient {
      */
     val available: Int
 
+    /**
+     * Borrows a client from the pool or creates a new one if needed.
+     *
+     * This method throws an Exception if the client can't be created. You can use [tryBorrowClient] to avoid this.
+     */
     fun borrowClient(): IClient<T>
+
+    /**
+     * Tries to borrow a client from the pool or create a new one, and returns null if it couldn't borrow the client.
+     */
+    fun tryBorrowClient(): IClient<T>? {
+        return try {
+            borrowClient()
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     /**
      * Obtains an [IPCClient] from this pool and executes the given [block] function on this resource.

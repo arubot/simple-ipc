@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'pw.aru.utils'
-version = '2.1'
+version = '2.1.1'
 
 // Minified Splash
 ({ String l, String v ->
@@ -48,6 +48,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
     outputDirectory = "$buildDir/javadoc"
+
+
 }
 
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {

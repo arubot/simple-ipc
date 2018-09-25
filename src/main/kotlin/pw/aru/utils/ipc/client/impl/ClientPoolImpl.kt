@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 import kotlin.math.max
 
-class ClientPoolImpl<T>(val protocol: Protocol, val connector: ClientConnector<T>, queueSize: Int, buildInitial: Boolean) : IClientPool<T> {
+internal class ClientPoolImpl<T>(val protocol: Protocol, val connector: ClientConnector<T>, queueSize: Int, buildInitial: Boolean) : IClientPool<T> {
 
     private var closed = false
     private val queue: Queue<PoolClient> = LinkedBlockingQueue(queueSize)

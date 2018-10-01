@@ -1,17 +1,22 @@
-# Simple-IPC
-IPC Server/Client in Kotlin implemented with Java Sockets.
+# SimpleIPC
+IPC Server/Client in Kotlin, with the default Java Sockets implementation and a complete API for other implementations.
 
 ## Getting Started
 
-Get it on JCenter: `pw.aru.utils:simple-ipc:1.1`
+Get it on JCenter: `pw.aru.utils:simple-ipc:LATEST`
+
+Latest Version:
+
+![Latest Version](https://api.bintray.com/packages/adriantodt/maven/simple-ipc/images/download.svg)
 
 ### Server:
 
 ```kotlin
-import pw.aru.utils.ipc.server.server
+import pw.aru.utils.ipc.server.connector.socket.SimpleSocket
+import pw.aru.utils.ipc.server.ipcServer
 
 fun main(args: Array<String>) {
-    server(serverName, serverPort) {
+    ipcServer(SimpleSocket(port)) {
         ...
     }
 }
@@ -20,10 +25,10 @@ fun main(args: Array<String>) {
 ### Client:
 
 ```kotlin
-import pw.aru.utils.ipc.client.IPCClient
+import pw.aru.utils.ipc.client.builder.socket.SocketClientBuilder
 
 fun main(args: Array<String>) {
-    val client = IPCClient(port = 2020)
+    val client = SocketClientBuilder().port(25050).build()
     
     ...
 }
@@ -31,10 +36,10 @@ fun main(args: Array<String>) {
 
 #### Using Client Pools:
 ```kotlin
-import pw.aru.utils.ipc.client.IPCClientPool
+import pw.aru.utils.ipc.client.builder.socket.SocketClientBuilder
 
 fun main(args: Array<String>) {
-    val pool = IPCClientPool(port = 2020)
+    val pool = SocketClientBuilder().port(25050).buildPool()
     
     pool.borrow { 
         ...
